@@ -329,7 +329,7 @@ void main() {
       case '9':
         // Save events to file
         eventManager.saveEventsToFile('eventmanager.json');
-        print('Goodbye!');
+        print('Data saved!');
         return;
 
       default:
