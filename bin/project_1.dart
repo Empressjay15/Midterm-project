@@ -1,27 +1,30 @@
 import 'dart:io';
 import 'dart:convert';
 
-//EVENT MANAGEMENT SYSTEM
+// EVENT MANAGEMENT SYSTEM
 
-//STEP 1: CREATING THE EVENT CLASS
-class Event{
-  //Initialising a constructor
-
-  Event({required this.title, required this.datetime, required this.location, required this.description});
+// STEP 1: CREATING THE EVENT CLASS
+class Event {
+  // Constructor initialization
+  Event({
+    required this.title,
+    required this.datetime,
+    required this.location,
+    required this.description,
+  });
 
   String title;
   DateTime datetime;
   String location;
   String description;
-
-   List<Attendee> attendees = [];
+  List<Attendee> attendees = [];
 
   @override
   String toString() {
     return 'Title: $title\nDatetime: $datetime\nLocation: $location\nDescription: $description\nAttendees: ${attendees.length}\n';
   }
 
-  // Function to convert Event object to a JSON map
+  // Convert Event object to a JSON map
   Map<String, dynamic> toJson() {
     return {
       'title': title,
@@ -32,25 +35,22 @@ class Event{
     };
   }
 
-  // Function to create an Event object from a JSON map
+  // Create an Event object from a JSON map
   static Event fromJson(Map<String, dynamic> json) {
     return Event(
-      title: json['title'] as String,
-      datetime: DateTime.parse(json['datetime'] as String),
-      location: json['location'] as String,
-      description: json['description'] as String,
+      title: json['title'],
+      datetime: DateTime.parse(json['datetime']),
+      location: json['location'],
+      description: json['description'],
     )..attendees = (json['attendees'] as List)
         .map((attendeeJson) => Attendee.fromJson(attendeeJson))
         .toList();
   }
 }
 
-
-
-
 // STEP 2: CREATING THE ATTENDEE CLASS
 class Attendee {
-  // A constructor to initialize all properties of the class
+  // Constructor initialization
   Attendee(this.name, {this.isPresent = false});
 
   String name;
@@ -61,7 +61,7 @@ class Attendee {
     return '$name (${isPresent ? 'Present' : 'Absent'})';
   }
 
-  // Function to convert Attendee object to a JSON map
+  // Convert Attendee object to a JSON map
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -69,29 +69,26 @@ class Attendee {
     };
   }
 
-  // Function to create an Attendee object from a JSON map
+  // Create an Attendee object from a JSON map
   static Attendee fromJson(Map<String, dynamic> json) {
     return Attendee(
-      json['name'] as String,
-      isPresent: json['isPresent'] as bool,
+      json['name'],
+      isPresent: json['isPresent'],
     );
   }
 }
 
+// STEP 3: CREATING THE EVENT MANAGER CLASS
+class EventManager {
+  List<Event> events = [];
 
-//STEP 3: CREATING THE EVENT MANAGER CLASS WITH ALL THE METHODS TO HANDLE EVENTS
-
-class EventManager{
-
- List<Event> events = [];
-
-  // A method to add events
+  // Add an event
   void addEvent(Event event) {
     events.add(event);
     print('Event added successfully.');
   }
 
-  // A method to edit events
+  // Edit an event
   void editEvent(int index, Event updatedEvent) {
     if (index < 0 || index >= events.length) {
       print('No event found at this index');
@@ -101,17 +98,17 @@ class EventManager{
     print('Event at index $index was successfully edited.');
   }
 
-  // A method to delete events
+  // Delete an event
   void deleteEvent(int index) {
     if (index < 0 || index >= events.length) {
-      print('No events found at this index');
+      print('No event found at this index');
       return;
     }
     events.removeAt(index);
     print('The event found at index $index has been removed from the list.');
   }
 
-  // A method to get a specific event
+  // Get a specific event
   void getEvent(int index) {
     if (index < 0 || index >= events.length) {
       print('No event found at this index');
@@ -120,7 +117,7 @@ class EventManager{
     print(events[index]);
   }
 
-  // A method to register attendees for each event
+  // Register an attendee for an event
   void registerAttendee(int eventIndex, Attendee attendee) {
     if (eventIndex < 0 || eventIndex >= events.length) {
       print('No event found at this index');
@@ -130,7 +127,7 @@ class EventManager{
     print('Attendee ${attendee.name} registered successfully.');
   }
 
-  // A method to list attendees for each event
+  // List attendees for an event
   void listAttendees(int eventIndex) {
     if (eventIndex < 0 || eventIndex >= events.length) {
       print('No event found at this index');
@@ -148,7 +145,7 @@ class EventManager{
     }
   }
 
-  // A method to list all events
+  // List all events
   void listEvents() {
     if (events.isEmpty) {
       print('No events available.');
@@ -159,7 +156,7 @@ class EventManager{
     }
   }
 
-  // A method to check for schedule conflicts
+  // Check for schedule conflicts
   void checkScheduleConflict(DateTime datetime) {
     var conflictingEvents = events.where((event) => event.datetime.isAtSameMomentAs(datetime)).toList();
     if (conflictingEvents.isEmpty) {
@@ -172,10 +169,8 @@ class EventManager{
     }
   }
 
-
-
-// Load events from file
-  void loadEventsFromFile(String filePath) async {
+  // Load events from file
+  Future<void> loadEventsFromFile(String filePath) async {
     try {
       final jsonString = await File(filePath).readAsString();
       final jsonData = jsonDecode(jsonString) as List;
@@ -187,7 +182,7 @@ class EventManager{
   }
 
   // Save events to file
-  void saveEventsToFile(String filePath) async {
+  Future<void> saveEventsToFile(String filePath) async {
     final jsonData = events.map((e) => e.toJson()).toList();
     final jsonString = jsonEncode(jsonData);
     await File(filePath).writeAsString(jsonString);
@@ -196,15 +191,14 @@ class EventManager{
 }
 
 // STEP 4: JSON CONVERSIONS
-
-// Function to save a single event to a JSON file
+// Save a single event to a JSON file
 Future<void> saveEventToFile(String filePath, Event event) async {
   final jsonData = event.toJson();
   final jsonString = jsonEncode(jsonData);
   await File(filePath).writeAsString(jsonString);
 }
 
-// Function to load a single event from a JSON file
+// Load a single event from a JSON file
 Future<Event?> loadEventFromFile(String filePath) async {
   try {
     final jsonString = await File(filePath).readAsString();
@@ -216,6 +210,7 @@ Future<Event?> loadEventFromFile(String filePath) async {
   }
 }
 
+// Main function to handle the event manager application
 void main() {
   final eventManager = EventManager();
 
@@ -232,7 +227,7 @@ void main() {
     print('6. List Attendees');
     print('7. List All Events');
     print('8. Check Schedule Conflict');
-    print('9. Save & Exit');
+    print('9. Save changes');
     stdout.write('Choose an option: ');
     final input = stdin.readLineSync();
 
@@ -327,10 +322,8 @@ void main() {
         break;
 
       case '9':
-        // Save events to file
         eventManager.saveEventsToFile('eventmanager.json');
-        print('Data saved!');
-        return;
+        break;
 
       default:
         print('Invalid option. Please try again.');
@@ -338,4 +331,3 @@ void main() {
     }
   }
 }
-
