@@ -81,26 +81,29 @@ class Attendee {
 // STEP 3: CREATING THE EVENT MANAGER CLASS
 class EventManager {
   List<Event> events = [];
-
-  // Add an event
-  void addEvent(Event event) {
-    events.add(event);
-    print('Event added successfully.');
+//A method to add events
+ void addEvent(String title, String date, String time, String location, String description) {
+    events.add(Event(title, date, time, location, description));
+    print('This event:"$title" has been successfully added to the list.');
   }
-
-  // Edit an event
-  void editEvent(int index, Event updatedEvent) {
-    if (index < 0 || index >= events.length) {
-      print('No event found at this index');
-      return;
+//A methtod to edit events
+  void editEvent(int index, String title, String date, String time, String location, String description) {
+    if (index >= 0 && index < events.length) {
+      events[index]
+        ..title = title
+        ..date = date
+        ..time = time
+        ..location = location
+        ..description = description;
+      print('Event "$title" updated successfully.');
+    } else {
+      print('Invalid event index.');
     }
-    events[index] = updatedEvent;
-    print('Event at index $index was successfully edited.');
   }
-
-  // Delete an event
+  
+  //A method to delete an event
   void deleteEvent(int index) {
-    if (index < 0 || index >= events.length) {
+    if (index < 0 && index >= events.length) {
       print('No event found at this index');
       return;
     }
@@ -108,15 +111,39 @@ class EventManager {
     print('The event found at index $index has been removed from the list.');
   }
 
-  // Get a specific event
-  void getEvent(int index) {
-    if (index < 0 || index >= events.length) {
-      print('No event found at this index');
-      return;
+ //A method to list all events
+  void listEvents(){
+    if(events.isEmpty){
+      print('The events list is empty');
+    }else{
+      print('List of events:');
+      for(var i=0; i< events.length; i++){
+        print('${i+1}. ${events[i]}');
+      }
     }
-    print(events[index]);
+  }
+  
+//Method to list events chronologically
+  
+  void listEventsChronologically() {
+    events.sort((a, b) => a.date.compareTo(b.date));
+    listEvents();
   }
 
+    // Check for schedule conflicts
+  void checkScheduleConflict(DateTime datetime) {
+    var conflictingEvents = events.where((event) => event.datetime.isAtSameMomentAs(datetime)).toList();
+    if (conflictingEvents.isEmpty) {
+      print('No events are scheduled at the given datetime.');
+    } else {
+      print('Conflicting events at the given datetime:');
+      for (var event in conflictingEvents) {
+        print(event);
+      }
+    }
+  }
+        
+      
   // Register an attendee for an event
   void registerAttendee(int eventIndex, Attendee attendee) {
     if (eventIndex < 0 || eventIndex >= events.length) {
@@ -144,72 +171,47 @@ class EventManager {
       print('Attendee: ${attendee.name} - ${attendee.isPresent ? "Present" : "Absent"}');
     }
   }
-
-  // List all events
-  void listEvents() {
-    if (events.isEmpty) {
-      print('No events available.');
-      return;
-    }
-    for (var event in events) {
-      print(event);
-    }
-  }
-
-  // Check for schedule conflicts
-  void checkScheduleConflict(DateTime datetime) {
-    var conflictingEvents = events.where((event) => event.datetime.isAtSameMomentAs(datetime)).toList();
-    if (conflictingEvents.isEmpty) {
-      print('No events are scheduled at the given datetime.');
-    } else {
-      print('Conflicting events at the given datetime:');
-      for (var event in conflictingEvents) {
-        print(event);
+// A method to mark attendance
+  void markAttendance(int eventIndex, int attendeeIndex, bool isPresent) {
+    if (eventIndex >= 0 && eventIndex < events.length) {
+      if (attendeeIndex >= 0 && attendeeIndex < events[eventIndex].attendees.length) {
+        events[eventIndex].attendees[attendeeIndex].isPresent = isPresent;
+        print('Attendance updated for attendee "${events[eventIndex].attendees[attendeeIndex].name}".');
+      } else {
+        print('Invalid attendee index.');
       }
+    } else {
+      print('Invalid event index.');
     }
   }
 
-  // Load events from file
-  Future<void> loadEventsFromFile(String filePath) async {
+
+ // Method to save events to a JSON file
+  void saveEventsToFile(String filePath) {
+    List<Map<String, dynamic>> jsonEvents =
+        events.map((event) => event.toJson()).toList();
+    String jsonString = jsonEncode(jsonEvents);
+    File file = File(filePath);
+    file.writeAsStringSync(jsonString);
+    print("Events saved to $filePath");
+  }
+
+  // Method to load events from a JSON file
+  void loadEventsFromFile(String filePath) {
     try {
-      final jsonString = await File(filePath).readAsString();
-      final jsonData = jsonDecode(jsonString) as List;
-      events = jsonData.map((e) => Event.fromJson(e)).toList();
-      print('Events loaded from file.');
+      File file = File(filePath);
+      String jsonString = file.readAsStringSync();
+      List<dynamic> jsonList = jsonDecode(jsonString);
+      events.clear();
+      for (var jsonEvent in jsonList) {
+        events.add(Event.fromJson(jsonEvent));
+      }
+      print("Events loaded from $filePath");
     } catch (e) {
-      print('Error loading events from file: $e');
+      print("Error loading events from file: $e");
     }
   }
-
-  // Save events to file
-  Future<void> saveEventsToFile(String filePath) async {
-    final jsonData = events.map((e) => e.toJson()).toList();
-    final jsonString = jsonEncode(jsonData);
-    await File(filePath).writeAsString(jsonString);
-    print('Events saved to file.');
-  }
 }
-
-// STEP 4: JSON CONVERSIONS
-// Save a single event to a JSON file
-Future<void> saveEventToFile(String filePath, Event event) async {
-  final jsonData = event.toJson();
-  final jsonString = jsonEncode(jsonData);
-  await File(filePath).writeAsString(jsonString);
-}
-
-// Load a single event from a JSON file
-Future<Event?> loadEventFromFile(String filePath) async {
-  try {
-    final jsonString = await File(filePath).readAsString();
-    final jsonData = jsonDecode(jsonString);
-    return Event.fromJson(jsonData);
-  } catch (e) {
-    print("Error reading or parsing file: $e");
-    return null;
-  }
-}
-
 // Main function to handle the event manager application
 void main() {
   final eventManager = EventManager();
@@ -222,10 +224,10 @@ void main() {
     print('1. Add Event');
     print('2. Edit Event');
     print('3. Delete Event');
-    print('4. View Event');
+    print('4. List events');
     print('5. Register Attendee');
     print('6. List Attendees');
-    print('7. List All Events');
+    print('7. List events chronologically');
     print('8. Check Schedule Conflict');
     print('9. Save changes');
     stdout.write('Choose an option: ');
@@ -256,7 +258,7 @@ void main() {
         break;
 
       case '2':
-        stdout.write('Enter Event ID to Edit: ');
+        stdout.write('Enter Event index to Edit: ');
         int eventId = int.parse(stdin.readLineSync()!);
 
         stdout.write('Enter New Event Title: ');
@@ -282,19 +284,17 @@ void main() {
         break;
 
       case '3':
-        stdout.write('Enter Event ID to Delete: ');
+        stdout.write('Enter Event index to Delete: ');
         int deleteId = int.parse(stdin.readLineSync()!);
         eventManager.deleteEvent(deleteId);
         break;
 
       case '4':
-        stdout.write('Enter Event ID to View: ');
-        int viewId = int.parse(stdin.readLineSync()!);
-        eventManager.getEvent(viewId);
+       eventManager.listEvents();
         break;
 
       case '5':
-        stdout.write('Enter Event ID for Attendee Registration: ');
+        stdout.write('Enter Event index to register attendees: ');
         int registerId = int.parse(stdin.readLineSync()!);
 
         stdout.write('Enter Attendee Name: ');
@@ -306,13 +306,13 @@ void main() {
         break;
 
       case '6':
-        stdout.write('Enter Event ID to List Attendees: ');
+        stdout.write('Enter Event index to List Attendees: ');
         int listId = int.parse(stdin.readLineSync()!);
         eventManager.listAttendees(listId);
         break;
 
       case '7':
-        eventManager.listEvents();
+        eventManager.listEventsChronologically();
         break;
 
       case '8':
@@ -323,6 +323,7 @@ void main() {
 
       case '9':
         eventManager.saveEventsToFile('eventmanager.json');
+        print('Your data has been saved to the JSON file);
         break;
 
       default:
