@@ -11,6 +11,7 @@ class Event {
     required this.datetime,
     required this.location,
     required this.description,
+    required this.attendees
   });
 
   String title;
@@ -19,9 +20,7 @@ class Event {
   String description;
   List<Attendee> attendees = [];
 
-  @override
-  String toString() {
-    return 'Title: $title\nDatetime: $datetime\nLocation: $location\nDescription: $description\nAttendees: ${attendees.length}\n';
+ 
   }
 
   // Convert Event object to a JSON map
@@ -36,30 +35,39 @@ class Event {
   }
 
   // Create an Event object from a JSON map
-  static Event fromJson(Map<String, dynamic> json) {
+  factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
       title: json['title'],
       datetime: DateTime.parse(json['datetime']),
       location: json['location'],
       description: json['description'],
-    )..attendees = (json['attendees'] as List)
+      attendees = (json['attendees'] as List<dynamic>)
         .map((attendeeJson) => Attendee.fromJson(attendeeJson))
         .toList();
-  }
+  };
 }
+ @override   
+  String toString() {
+    return 'Title: $title,\nDatetime: $datetime,\nLocation: $location,\nDescription: $description;
+    }
+  }
 
+  
+      
+    
+
+      
+
+      
 // STEP 2: CREATING THE ATTENDEE CLASS
 class Attendee {
   // Constructor initialization
-  Attendee(this.name, {this.isPresent = false});
+  Attendee({required this.name, this.isPresent = false});
 
   String name;
   bool isPresent;
 
-  @override
-  String toString() {
-    return '$name (${isPresent ? 'Present' : 'Absent'})';
-  }
+
 
   // Convert Attendee object to a JSON map
   Map<String, dynamic> toJson() {
@@ -70,22 +78,31 @@ class Attendee {
   }
 
   // Create an Attendee object from a JSON map
-  static Attendee fromJson(Map<String, dynamic> json) {
+  factory Attendee.fromJson(Map<String, dynamic> json) {
     return Attendee(
-      json['name'],
+      name:json['name'],
       isPresent: json['isPresent'],
     );
+  }
+    @override
+  String toString() {
+    return '$name (${isPresent ? 'Present' : 'Absent'})';
   }
 }
 
 // STEP 3: CREATING THE EVENT MANAGER CLASS
+
 class EventManager {
+
   List<Event> events = [];
+  
 //A method to add events
  void addEvent(String title, String date, String time, String location, String description) {
     events.add(Event(title, date, time, location, description));
     print('This event:"$title" has been successfully added to the list.');
   }
+
+  
 //A methtod to edit events
   void editEvent(int index, String title, String date, String time, String location, String description) {
     if (index >= 0 && index < events.length) {
@@ -101,7 +118,9 @@ class EventManager {
     }
   }
   
+  
   //A method to delete an event
+
   void deleteEvent(int index) {
     if (index < 0 && index >= events.length) {
       print('No event found at this index');
@@ -112,6 +131,7 @@ class EventManager {
   }
 
  //A method to list all events
+ 
   void listEvents(){
     if(events.isEmpty){
       print('The events list is empty');
@@ -129,8 +149,10 @@ class EventManager {
     events.sort((a, b) => a.date.compareTo(b.date));
     listEvents();
   }
+  
 
     // Check for schedule conflicts
+    
   void checkScheduleConflict(DateTime datetime) {
     var conflictingEvents = events.where((event) => event.datetime.isAtSameMomentAs(datetime)).toList();
     if (conflictingEvents.isEmpty) {
@@ -145,6 +167,7 @@ class EventManager {
         
       
   // Register an attendee for an event
+  
   void registerAttendee(int eventIndex, Attendee attendee) {
     if (eventIndex < 0 || eventIndex >= events.length) {
       print('No event found at this index');
@@ -153,8 +176,10 @@ class EventManager {
     events[eventIndex].attendees.add(attendee);
     print('Attendee ${attendee.name} registered successfully.');
   }
+  
 
   // List attendees for an event
+  
   void listAttendees(int eventIndex) {
     if (eventIndex < 0 || eventIndex >= events.length) {
       print('No event found at this index');
@@ -171,7 +196,9 @@ class EventManager {
       print('Attendee: ${attendee.name} - ${attendee.isPresent ? "Present" : "Absent"}');
     }
   }
+  
 // A method to mark attendance
+
   void markAttendance(int eventIndex, int attendeeIndex, bool isPresent) {
     if (eventIndex >= 0 && eventIndex < events.length) {
       if (attendeeIndex >= 0 && attendeeIndex < events[eventIndex].attendees.length) {
@@ -187,6 +214,7 @@ class EventManager {
 
 
  // Method to save events to a JSON file
+ 
   void saveEventsToFile(String filePath) {
     List<Map<String, dynamic>> jsonEvents =
         events.map((event) => event.toJson()).toList();
@@ -196,7 +224,10 @@ class EventManager {
     print("Events saved to $filePath");
   }
 
+  
+
   // Method to load events from a JSON file
+  
   void loadEventsFromFile(String filePath) {
     try {
       File file = File(filePath);
@@ -212,7 +243,10 @@ class EventManager {
     }
   }
 }
+
+
 // Main function to handle the event manager application
+
 void main() {
   final eventManager = EventManager();
 
