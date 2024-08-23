@@ -288,6 +288,12 @@ void main() {
 
         Attendee attendee = Attendee(name: attendeeName);
         eventManager.registerAttendee(registerEventId - 1, attendee);
+
+         stdout.write('Is Attendee Present? (true/false): ');
+        bool isPresent = stdin.readLineSync()!.toLowerCase() == 'true';
+
+        Attendee attendee = Attendee(name: attendeeName, isPresent: isPresent);
+        eventManager.registerAttendee(registerEventId, attendee);
         break;
 
       case '6':
