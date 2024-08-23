@@ -251,7 +251,7 @@ void main() {
         break;
 
       case '2':
-        stdout.write('Enter Event ID to Edit: ');
+        stdout.write('Enter Event Index to Edit: ');
         int eventId = int.parse(stdin.readLineSync()!);
 
         stdout.write('Enter New Event Title: ');
@@ -270,7 +270,7 @@ void main() {
         break;
 
       case '3':
-        stdout.write('Enter Event ID to Delete: ');
+        stdout.write('Enter Event Index to Delete: ');
         int deleteId = int.parse(stdin.readLineSync()!);
         eventManager.deleteEvent(deleteId - 1);
         break;
@@ -280,7 +280,7 @@ void main() {
         break;
 
       case '5':
-        stdout.write('Enter Event ID to Register Attendee: ');
+        stdout.write('Enter Event Index to Register Attendee: ');
         int registerEventId = int.parse(stdin.readLineSync()!);
 
         stdout.write('Enter Attendee Name: ');
@@ -291,7 +291,7 @@ void main() {
         break;
 
       case '6':
-        stdout.write('Enter Event ID to List Attendees: ');
+        stdout.write('Enter Event Index to List Attendees: ');
         int listAttendeeId = int.parse(stdin.readLineSync()!);
         eventManager.listAttendees(listAttendeeId - 1);
         break;
